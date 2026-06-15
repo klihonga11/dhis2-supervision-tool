@@ -4,11 +4,14 @@ import './index.css';
 import App from './App.tsx';
 import { MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
+import { AuthProvider } from './context/AuthContext.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </MantineProvider>
   </StrictMode>
 );

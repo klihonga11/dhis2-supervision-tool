@@ -10,13 +10,10 @@ import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  type LoginFormValues = {
-    username: string;
-    password: string;
-  };
-
+  const { login } = useAuth();
   const [opened, { open, close }] = useDisclosure(false);
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
@@ -25,22 +22,21 @@ export default function Login() {
     initialValues: { username: '', password: '' },
   });
 
-  // logs the user into the system
+  type LoginFormValues = {
+    username: string;
+    password: string;
+  };
   const handleSubmit = async (values: LoginFormValues) => {
     try {
       const { username, password } = values;
 
-      const response = await fetch('/api/me', {
-        headers: {
-          Authorization: `Basic ${btoa(`${username}:${password}`)}`,
-        },
-      });
+      const success = await login(username, password);
 
-      if (!response.ok) {
-        throw new Error(`${response.status} - ${response.statusText}`);
+      if (success) {
+        navigate('/');
+      } else {
+        throw new Error('Invalid username or password');
       }
-
-      navigate('/home');
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message);
