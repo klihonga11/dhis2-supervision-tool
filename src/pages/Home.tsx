@@ -1,10 +1,21 @@
-import { Button, Text } from '@mantine/core';
+import {
+  Button,
+  Container,
+  Group,
+  Modal,
+  Space,
+  Text,
+  Title,
+} from '@mantine/core';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import classes from '../css/HeaderSimple.module.css';
+import { useDisclosure } from '@mantine/hooks';
 
 export default function Home() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [opened, { open, close }] = useDisclosure(false);
 
   const handleLogout = () => {
     logout();
@@ -13,8 +24,26 @@ export default function Home() {
 
   return (
     <>
-      <Text>Home page</Text>
-      <Button onClick={handleLogout}>Log out</Button>
+      <header className={classes.header}>
+        <Container size="md" className={classes.inner}>
+          <Text style={{ color: 'white' }}>Home page</Text>
+          <Button variant="light" onClick={open}>
+            Log out
+          </Button>
+        </Container>
+      </header>
+
+      <Modal opened={opened} onClose={close} withCloseButton={false}>
+        <Title order={3}>Log out</Title>
+        <div>Are you sure you want to log out?</div>
+        <Space h="lg" />
+        <Group>
+          <Button variant="outline" onClick={close}>
+            No
+          </Button>
+          <Button onClick={handleLogout}>Yes</Button>
+        </Group>
+      </Modal>
     </>
   );
 }
