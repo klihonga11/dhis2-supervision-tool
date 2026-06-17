@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://ccdev.org/ichis',
+        target: 'https://ccdev.org/chistest',
         changeOrigin: true,
         secure: true,
       },
