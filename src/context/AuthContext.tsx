@@ -54,7 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
 
+      const user = await response.json();
       sessionStorage.setItem('auth', auth);
+      sessionStorage.setItem('user', JSON.stringify(user));
 
       setIsAuthenticated(true);
 
@@ -66,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   function logout() {
     sessionStorage.removeItem('auth');
+    sessionStorage.removeItem('user');
     setIsAuthenticated(false);
   }
 
