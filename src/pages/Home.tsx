@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import classes from '../css/HeaderSimple.module.css';
 import { useDisclosure } from '@mantine/hooks';
+import useServerData from '../hooks/useServerData';
 
 export default function Home() {
   const { logout } = useAuth();
@@ -22,6 +23,8 @@ export default function Home() {
     navigate('/login');
   };
 
+  const { assignedUsers, fetchAssignedUsers } = useServerData();
+
   return (
     <>
       <header className={classes.header}>
@@ -32,6 +35,16 @@ export default function Home() {
           </Button>
         </Container>
       </header>
+
+      <Button onClick={fetchAssignedUsers}>Click Me!</Button>
+
+      <div>
+        <ul>
+          {assignedUsers.map((user) => (
+            <li key={user.id}>{user.name}</li>
+          ))}
+        </ul>
+      </div>
 
       <Modal opened={opened} onClose={close} withCloseButton={false}>
         <Title order={3}>Log out</Title>
