@@ -23,7 +23,7 @@ export default function Home() {
     navigate('/login');
   };
 
-  const { assignedUsers, fetchAssignedUsers } = useServerData();
+  const { assignedUsers, fetchSystemUsageData } = useServerData();
 
   return (
     <>
@@ -36,7 +36,7 @@ export default function Home() {
         </Container>
       </header>
 
-      <Button onClick={fetchAssignedUsers}>Click Me!</Button>
+      <Button onClick={fetchSystemUsageData}>Click Me!</Button>
 
       <div>
         <ul>

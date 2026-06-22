@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import type {
   AssignedUser,
+  EventResponse,
   SignedInUser,
+  SupervisorGroup,
   UserGroupsResponse,
+  UserResponse,
 } from '../utils/types';
+import fetchJSON from '../utils/fetchJSON';
 
 export default function useServerData() {
   const [assignedUsers, setAssignedUsers] = useState<AssignedUser[]>([]);
@@ -27,53 +31,106 @@ export default function useServerData() {
   };
 
   // gets the supervsior group for the signed in user
-  const getSupervisorGroup = (
+  const getSupervisorUserGroup = (
     response: UserGroupsResponse,
-    user: SignedInUser
-  ) => {
+    signedInUser: SignedInUser
+  ): SupervisorGroup => {
     // get the names of all user groups where the id of the signed in user is part of the user group name
-    const supervisorGroup = response.userGroups.filter((val) =>
-      val.displayName.includes(user.id)
+    const supervisorGroup = response.userGroups.find((val) =>
+      val.displayName.includes(signedInUser.id)
     );
 
-    if (supervisorGroup.length == 0) {
+    if (!supervisorGroup) {
       throw new Error(
-        'No supervisor group found. Please check the server if a group was created for this supervisor.'
-      );
-    } else if (supervisorGroup.length > 1) {
-      throw new Error(
-        'More than one supervisor group found. Please check the server and make sure the signed in user only has one group.'
+        `No supervisor group found. Please check the server if a group was created for this supervisor.`
       );
     }
 
-    return supervisorGroup[0];
+    return supervisorGroup;
   };
 
-  // fetch users assigned to the signed in user using the DHIS2 api
-  const fetchAssignedUsers = async () => {
+  const fetchMostRecentEvents = (
+    assignedUsers: UserResponse[],
+    auth: string
+  ): Promise<EventResponse[]> => {
+    const requests = assignedUsers.flatMap((assignedUser) =>
+      assignedUser.organisationUnits.map((ou) => {
+        // fetch the most recent event synced to the user's organisation unit
+        return fetchJSON<EventResponse>(
+          `/api/tracker/events?orgUnit=${ou.id}&pageSize=1&order=createdAt:desc&fields=event,status,createdAt,createdBy`,
+          auth
+        );
+      })
+    );
+
+    return Promise.all(requests);
+  };
+
+  const fetchUsersWithOrgUnits = (
+    assignedUsers: AssignedUser[],
+    auth: string
+  ): Promise<UserResponse[]> => {
+    const requests = assignedUsers.map((assignedUser) =>
+      // fetch the id and assigned organisation units of the user in the supervisor user group
+      fetchJSON<UserResponse>(
+        `/api/users/${assignedUser.id}?fields=id,organisationUnits`,
+        auth
+      )
+    );
+
+    return Promise.all(requests);
+  };
+
+  const getUsersWithLastSyncDate = (
+    supervisorGroup: SupervisorGroup,
+    mostRecentEvents: EventResponse[]
+  ) => {
+    return supervisorGroup.users.map((user) => {
+      const event = mostRecentEvents.find(
+        (event) => event.instances[0]?.createdBy.uid === user.id
+      );
+
+      if (!event) {
+        return user;
+      }
+
+      return {
+        ...user,
+        lastSyncDate: event?.instances[0].createdAt,
+      };
+    });
+  };
+
+  const fetchUserGroupsBelongingToSignedInUser = async (
+    signedInUser: SignedInUser,
+    auth: string
+  ) => {
+    // get user groups that the signed in user is a part of
+    return fetchJSON<UserGroupsResponse>(
+      `/api/userGroups?filter=users.id:eq:${signedInUser.id}&fields=id,displayName,users`,
+      auth
+    );
+  };
+
+  const fetchSystemUsageData = async () => {
     setError(null);
     setLoading(true);
 
     try {
       const { signedInUser, auth } = getAuthenticationDetails();
-
-      // get user groups that the signed in user is a part of
-      const request = await fetch(
-        `/api/userGroups?filter=users.id:eq:${signedInUser.id}&fields=id,displayName,users`,
-        {
-          headers: {
-            Authorization: `Basic ${auth}`,
-          },
-        }
+      const userGroups = await fetchUserGroupsBelongingToSignedInUser(
+        signedInUser,
+        auth
+      );
+      const supervisorGroup = getSupervisorUserGroup(userGroups, signedInUser);
+      const users = await fetchUsersWithOrgUnits(supervisorGroup.users, auth);
+      const mostRecentEvents = await fetchMostRecentEvents(users, auth);
+      const usersWithLastSyncDate = getUsersWithLastSyncDate(
+        supervisorGroup,
+        mostRecentEvents
       );
 
-      if (!request.ok) {
-        throw new Error(`Failed to fetch assigned users - ${request.status}`);
-      }
-
-      const response: UserGroupsResponse = await request.json();
-      const supervisorGroup = getSupervisorGroup(response, signedInUser);
-      setAssignedUsers(supervisorGroup.users);
+      setAssignedUsers(usersWithLastSyncDate);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -84,7 +141,7 @@ export default function useServerData() {
   };
 
   return {
-    fetchAssignedUsers,
+    fetchSystemUsageData,
     assignedUsers,
     loading,
     error,
