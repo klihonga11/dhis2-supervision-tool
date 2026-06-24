@@ -1,9 +1,11 @@
 import {
   Button,
+  Card,
   Container,
   Group,
   Modal,
   Space,
+  Table,
   Text,
   Title,
 } from '@mantine/core';
@@ -12,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import classes from '../css/HeaderSimple.module.css';
 import { useDisclosure } from '@mantine/hooks';
 import useServerData from '../hooks/useServerData';
+import SystemUsageTable from '../components/SystemUsageTable';
 
 export default function Home() {
   const { logout } = useAuth();
@@ -38,13 +41,7 @@ export default function Home() {
 
       <Button onClick={fetchSystemUsageData}>Click Me!</Button>
 
-      <div>
-        <ul>
-          {assignedUsers.map((user) => (
-            <li key={user.id}>{user.name}</li>
-          ))}
-        </ul>
-      </div>
+      <SystemUsageTable users={assignedUsers}></SystemUsageTable>
 
       <Modal opened={opened} onClose={close} withCloseButton={false}>
         <Title order={3}>Log out</Title>
