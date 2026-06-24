@@ -1,5 +1,6 @@
 import { Table, Card, Text } from '@mantine/core';
 import type { AssignedUser } from '../utils/types';
+import formatDate from '../utils/formatDate';
 
 export default function SystemUsageTable({ users }: { users: AssignedUser[] }) {
   const rows = users.map((user) => {
@@ -10,7 +11,9 @@ export default function SystemUsageTable({ users }: { users: AssignedUser[] }) {
         <Table.Td>
           <Card>
             <Text>Name: {user.name}</Text>
-            <Text>Last sync date: {user?.lastSyncDate ?? `N/A`}</Text>
+            <Text>
+              Last sync date: {formatDate(user?.lastSyncDate) ?? `N/A`}
+            </Text>
           </Card>
         </Table.Td>
       </Table.Tr>
