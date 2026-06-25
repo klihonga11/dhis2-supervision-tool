@@ -42,10 +42,8 @@ export type AssignedUser = {
 export type SupervisorGroup = {
   displayName: string;
   id: string;
-  users: [
-    {
-      id: string;
-      name: string;
-    },
-  ];
+  users: {
+    id: string;
+    name: string;
+  }[];
 };

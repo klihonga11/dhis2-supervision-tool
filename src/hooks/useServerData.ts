@@ -46,7 +46,12 @@ export default function useServerData() {
       );
     }
 
-    return supervisorGroup;
+    return {
+      ...supervisorGroup,
+      users: supervisorGroup.users.filter(
+        (user) => user.id !== signedInUser.id
+      ),
+    };
   };
 
   const fetchMostRecentEvents = (
