@@ -49,8 +49,10 @@ export default function Home() {
               Welcome, {signedInUser?.firstName} {signedInUser?.surname}
             </Text>
             <div>
-              <Button onClick={fetchSystemUsageData}>Refresh</Button>
-              <Text>Last refreshed: {lastRefreshTime}</Text>
+              <Button disabled={loading} onClick={fetchSystemUsageData}>
+                Refresh
+              </Button>
+              <Text>Last refreshed: {lastRefreshTime ?? 'N/A'}</Text>
             </div>
           </Group>
 

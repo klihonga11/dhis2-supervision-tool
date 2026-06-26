@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type {
   AssignedUser,
   EventResponse,
@@ -14,6 +14,10 @@ export default function useServerData() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastRefreshTime, setLastRefreshTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchSystemUsageData();
+  }, []);
 
   // gets the user details along with their auth token
   const getAuthenticationDetails = () => {
