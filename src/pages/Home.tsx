@@ -28,7 +28,8 @@ export default function Home() {
     navigate('/login');
   };
 
-  const { assignedUsers, fetchSystemUsageData, loading } = useServerData();
+  const { assignedUsers, fetchSystemUsageData, loading, lastRefreshTime } =
+    useServerData();
 
   return (
     <>
@@ -43,17 +44,20 @@ export default function Home() {
         </header>
 
         <Box px={24}>
-          <Group>
+          <Group justify="space-between">
             <Text>
               Welcome, {signedInUser?.firstName} {signedInUser?.surname}
             </Text>
-            <Button onClick={fetchSystemUsageData}>Refresh</Button>
+            <div>
+              <Button onClick={fetchSystemUsageData}>Refresh</Button>
+              <Text>Last refreshed: {lastRefreshTime}</Text>
+            </div>
           </Group>
 
           <Space h="lg" />
 
           {loading ? (
-            <Center h="100vh">
+            <Center>
               <div>
                 <Loader />
                 <Text>Loading system usage data. Please wait...</Text>

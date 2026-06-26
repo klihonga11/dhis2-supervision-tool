@@ -13,6 +13,7 @@ export default function useServerData() {
   const [assignedUsers, setAssignedUsers] = useState<AssignedUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastRefreshTime, setLastRefreshTime] = useState<string | null>(null);
 
   // gets the user details along with their auth token
   const getAuthenticationDetails = () => {
@@ -117,6 +118,22 @@ export default function useServerData() {
     );
   };
 
+  // sets the date time when the system usage data was last refreshed
+  const updateRefreshTime = () => {
+    const now = new Date();
+
+    const formatted = new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(now);
+
+    setLastRefreshTime(formatted);
+  };
+
   const fetchSystemUsageData = async () => {
     setError(null);
     setLoading(true);
@@ -135,6 +152,7 @@ export default function useServerData() {
         mostRecentEvents
       );
 
+      updateRefreshTime();
       setAssignedUsers(usersWithLastSyncDate);
     } catch (error) {
       if (error instanceof Error) {
@@ -150,5 +168,6 @@ export default function useServerData() {
     assignedUsers,
     loading,
     error,
+    lastRefreshTime,
   };
 }
