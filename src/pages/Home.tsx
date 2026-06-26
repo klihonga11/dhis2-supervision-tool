@@ -1,11 +1,12 @@
 import {
   Button,
-  Card,
+  Center,
   Container,
   Group,
+  Loader,
   Modal,
   Space,
-  Table,
+  Stack,
   Text,
   Title,
 } from '@mantine/core';
@@ -26,26 +27,37 @@ export default function Home() {
     navigate('/login');
   };
 
-  const { assignedUsers, fetchSystemUsageData } = useServerData();
+  const { assignedUsers, fetchSystemUsageData, loading } = useServerData();
 
   return (
     <>
-      <header className={classes.header}>
-        <Container size="md" className={classes.inner}>
-          <Text style={{ color: 'white' }}>Home page</Text>
-          <Button variant="light" onClick={open}>
-            Log out
-          </Button>
-        </Container>
-      </header>
+      <Stack h="100vh">
+        <header className={classes.header}>
+          <Container size="md" className={classes.inner}>
+            <Text style={{ color: 'white' }}>Home page</Text>
+            <Button variant="light" onClick={open}>
+              Log out
+            </Button>
+          </Container>
+        </header>
 
-      <Button onClick={fetchSystemUsageData}>Click Me!</Button>
+        <Button onClick={fetchSystemUsageData}>Click Me!</Button>
 
-      <SystemUsageTable users={assignedUsers}></SystemUsageTable>
+        {loading ? (
+          <Center h="100vh">
+            <div>
+              <Loader />
+              <Text>Loading system usage data. Please wait...</Text>
+            </div>
+          </Center>
+        ) : (
+          <SystemUsageTable users={assignedUsers}></SystemUsageTable>
+        )}
+      </Stack>
 
       <Modal opened={opened} onClose={close} withCloseButton={false}>
         <Title order={3}>Log out</Title>
-        <div>Are you sure you want to log out?</div>
+        <Text>Are you sure you want to log out?</Text>
         <Space h="lg" />
         <Group>
           <Button variant="outline" onClick={close}>
