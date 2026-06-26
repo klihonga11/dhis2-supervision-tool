@@ -94,7 +94,7 @@ export default function useServerData() {
   const getUsersWithLastSyncDate = (
     supervisorGroup: SupervisorGroup,
     mostRecentEvents: EventResponse[]
-  ) => {
+  ): AssignedUser[] => {
     return supervisorGroup.users.map((user) => {
       const event = mostRecentEvents.find(
         (event) => event.instances[0]?.createdBy.uid === user.id
@@ -138,6 +138,45 @@ export default function useServerData() {
     setLastRefreshTime(formatted);
   };
 
+  // assign a status to the user - 1 means they're doing well, 2 means they need monitoring and 3 means they need follow up
+  const getUsersWithUsageStatus = (users: AssignedUser[]) => {
+    return users.map((user) => {
+      const { lastSyncDate } = user;
+      let status = 1 | 2 | 3;
+
+      if (!lastSyncDate) {
+        status = 3;
+      } else {
+        const diffDays = calculateDiffDays(lastSyncDate);
+
+        if (diffDays <= 3) {
+          status = 1;
+        } else if (diffDays > 3 && diffDays <= 7) {
+          status = 2;
+        } else {
+          status = 3;
+        }
+      }
+
+      return { ...user, status };
+    });
+  };
+
+  // calculates the numbers of days between today and the date the user last synced
+  const calculateDiffDays = (lastSyncDate: string) => {
+    const date = new Date(lastSyncDate);
+    const today = new Date();
+
+    // Set both to midnight
+    date.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const diffMs = today.getTime() - date.getTime();
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+    return diffDays;
+  };
+
   const fetchSystemUsageData = async () => {
     setError(null);
     setLoading(true);
@@ -155,9 +194,12 @@ export default function useServerData() {
         supervisorGroup,
         mostRecentEvents
       );
+      const usersWithUsageStatus = getUsersWithUsageStatus(
+        usersWithLastSyncDate
+      );
 
       updateRefreshTime();
-      setAssignedUsers(usersWithLastSyncDate);
+      setAssignedUsers(usersWithUsageStatus);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
