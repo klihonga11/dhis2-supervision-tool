@@ -21,7 +21,7 @@ export default function SystemUsageTable({ users }: { users: AssignedUser[] }) {
   });
 
   return (
-    <Table>
+    <Table style={{ width: '100%', tableLayout: 'fixed' }}>
       <Table.Thead>
         <Table.Tr>
           <Table.Th>Doing well</Table.Th>
