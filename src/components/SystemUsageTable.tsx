@@ -24,9 +24,15 @@ export default function SystemUsageTable({ users }: { users: AssignedUser[] }) {
     <Table style={{ width: '100%', tableLayout: 'fixed' }}>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th ta="center">Doing well</Table.Th>
-          <Table.Th ta="center">Needs monitoring</Table.Th>
-          <Table.Th ta="center">Follow up</Table.Th>
+          <Table.Th bg="green" ta="center">
+            Doing well
+          </Table.Th>
+          <Table.Th bg="orange" ta="center">
+            Needs monitoring
+          </Table.Th>
+          <Table.Th bg="red" ta="center">
+            Follow up
+          </Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>{rows}</Table.Tbody>
