@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import classes from '../css/HeaderSimple.module.css';
 import { useDisclosure } from '@mantine/hooks';
 import useServerData from '../hooks/useServerData';
-import SystemUsageTable from '../components/SystemUsageTable';
+import SystemUsageTable from '../components/SystemUsageGrid';
 
 export default function Home() {
   const { logout, signedInUser } = useAuth();
