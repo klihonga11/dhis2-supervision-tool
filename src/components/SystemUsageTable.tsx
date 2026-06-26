@@ -1,4 +1,4 @@
-import { Table, Card, Text } from '@mantine/core';
+import { Table, Card, Text, Center } from '@mantine/core';
 import type { AssignedUser } from '../utils/types';
 import formatDate from '../utils/formatDate';
 
@@ -6,14 +6,16 @@ export default function SystemUsageTable({ users }: { users: AssignedUser[] }) {
   const rows = users.map((user) => {
     return (
       <Table.Tr key={user.id}>
-        <Table.Td ta="center"></Table.Td>
-        <Table.Td ta="center"></Table.Td>
-        <Table.Td ta="center">
-          <Card>
-            <Text>Name: {user.name}</Text>
-            <Text>
-              Last sync date: {formatDate(user?.lastSyncDate) ?? `N/A`}
-            </Text>
+        <Table.Td></Table.Td>
+        <Table.Td></Table.Td>
+        <Table.Td>
+          <Card shadow="sm" padding="lg" withBorder>
+            <Center>
+              <Text ta="start">
+                Name: {user.name} <br />
+                Last sync date: {formatDate(user?.lastSyncDate) ?? `N/A`}
+              </Text>
+            </Center>
           </Card>
         </Table.Td>
       </Table.Tr>
