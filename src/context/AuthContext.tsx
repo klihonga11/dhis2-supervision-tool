@@ -1,8 +1,10 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import type { SignedInUser } from '../utils/types';
 
 type AuthContextType = {
   isAuthenticated: boolean;
   loading: boolean;
+  signedInUser: SignedInUser | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 };
@@ -12,6 +14,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [signedInUser, setSignedInUser] = useState<SignedInUser | null>(null);
 
   useEffect(() => {
     checkExistingSession();
@@ -58,7 +61,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       sessionStorage.setItem('auth', auth);
       sessionStorage.setItem('user', JSON.stringify(user));
 
-      setIsAuthenticated(true);
+      setIsAuthenticated(response.ok);
+      setSignedInUser(user as SignedInUser);
 
       return true;
     } catch {
@@ -79,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         login,
         logout,
+        signedInUser,
       }}
     >
       {children}

@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Center,
   Container,
@@ -18,7 +19,7 @@ import useServerData from '../hooks/useServerData';
 import SystemUsageTable from '../components/SystemUsageTable';
 
 export default function Home() {
-  const { logout } = useAuth();
+  const { logout, signedInUser } = useAuth();
   const navigate = useNavigate();
   const [opened, { open, close }] = useDisclosure(false);
 
@@ -41,18 +42,27 @@ export default function Home() {
           </Container>
         </header>
 
-        <Button onClick={fetchSystemUsageData}>Click Me!</Button>
+        <Box px={24}>
+          <Group>
+            <Text>
+              Welcome, {signedInUser?.firstName} {signedInUser?.surname}
+            </Text>
+            <Button onClick={fetchSystemUsageData}>Refresh</Button>
+          </Group>
 
-        {loading ? (
-          <Center h="100vh">
-            <div>
-              <Loader />
-              <Text>Loading system usage data. Please wait...</Text>
-            </div>
-          </Center>
-        ) : (
-          <SystemUsageTable users={assignedUsers}></SystemUsageTable>
-        )}
+          <Space h="lg" />
+
+          {loading ? (
+            <Center h="100vh">
+              <div>
+                <Loader />
+                <Text>Loading system usage data. Please wait...</Text>
+              </div>
+            </Center>
+          ) : (
+            <SystemUsageTable users={assignedUsers}></SystemUsageTable>
+          )}
+        </Box>
       </Stack>
 
       <Modal opened={opened} onClose={close} withCloseButton={false}>
