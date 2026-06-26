@@ -45,9 +45,9 @@ export default function Home() {
 
         <Box px={24}>
           <Group justify="space-between">
-            <Text>
+            <Title order={3}>
               Welcome, {signedInUser?.firstName} {signedInUser?.surname}
-            </Text>
+            </Title>
             <div>
               <Button disabled={loading} onClick={fetchSystemUsageData}>
                 Refresh
