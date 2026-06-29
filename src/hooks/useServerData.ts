@@ -177,6 +177,8 @@ export default function useServerData() {
     return diffDays;
   };
 
+  const clearError = () => setError(null);
+
   const fetchSystemUsageData = async () => {
     setError(null);
     setLoading(true);
@@ -214,6 +216,7 @@ export default function useServerData() {
     assignedUsers,
     loading,
     error,
+    clearError,
     lastRefreshTime,
   };
 }

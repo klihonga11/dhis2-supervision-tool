@@ -13,12 +13,19 @@ import { useAuth } from '../context/AuthContext';
 import useServerData from '../hooks/useServerData';
 import SystemUsageTable from '../components/SystemUsageGrid';
 import AppHeader from '../components/AppHeader';
+import ErrorModal from '../components/ErrorModal';
 
 export default function Home() {
   const { signedInUser } = useAuth();
 
-  const { assignedUsers, fetchSystemUsageData, loading, lastRefreshTime } =
-    useServerData();
+  const {
+    assignedUsers,
+    fetchSystemUsageData,
+    loading,
+    error,
+    clearError,
+    lastRefreshTime,
+  } = useServerData();
 
   return (
     <>
@@ -52,6 +59,12 @@ export default function Home() {
           )}
         </Box>
       </Stack>
+
+      <ErrorModal
+        opened={error !== null}
+        onClose={clearError}
+        message={error}
+      />
     </>
   );
 }
