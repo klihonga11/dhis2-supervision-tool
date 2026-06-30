@@ -1,4 +1,4 @@
-import { SimpleGrid, Stack, Title } from '@mantine/core';
+import { ScrollArea, SimpleGrid, Stack, Title } from '@mantine/core';
 import type { AssignedUser } from '../utils/types';
 import UsageStackCard from './UsageStackCard';
 
@@ -9,31 +9,45 @@ export default function SystemUsageTable({ users }: { users: AssignedUser[] }) {
 
   return (
     <SimpleGrid cols={3}>
-      <Stack>
+      <Stack h="75vh">
         <Title bg="green" order={4}>
           Doing Well
         </Title>
-        {doing_well.map((user) => (
-          <UsageStackCard key={user.id} user={user} />
-        ))}
+
+        <ScrollArea flex={1}>
+          <Stack>
+            {doing_well.map((user) => (
+              <UsageStackCard key={user.id} user={user} />
+            ))}
+          </Stack>
+        </ScrollArea>
       </Stack>
 
-      <Stack>
+      <Stack h="75vh">
         <Title bg="orange" order={4}>
           Needs Monitoring
         </Title>
-        {needs_monitoring.map((user) => (
-          <UsageStackCard key={user.id} user={user} />
-        ))}
+
+        <ScrollArea flex={1}>
+          <Stack>
+            {needs_monitoring.map((user) => (
+              <UsageStackCard key={user.id} user={user} />
+            ))}
+          </Stack>
+        </ScrollArea>
       </Stack>
 
-      <Stack>
+      <Stack h="75vh">
         <Title bg="red" order={4}>
           Follow Up
         </Title>
-        {follow_up.map((user) => (
-          <UsageStackCard key={user.id} user={user} />
-        ))}
+        <ScrollArea flex={1}>
+          <Stack>
+            {follow_up.map((user) => (
+              <UsageStackCard key={user.id} user={user} />
+            ))}
+          </Stack>
+        </ScrollArea>
       </Stack>
     </SimpleGrid>
   );
