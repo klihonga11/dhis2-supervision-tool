@@ -14,7 +14,7 @@ export default function SystemUsageTable({ users }: { users: AssignedUser[] }) {
           Doing Well
         </Title>
         {doing_well.map((user) => (
-          <UsageStackCard user={user} />
+          <UsageStackCard key={user.id} user={user} />
         ))}
       </Stack>
 
@@ -23,7 +23,7 @@ export default function SystemUsageTable({ users }: { users: AssignedUser[] }) {
           Needs Monitoring
         </Title>
         {needs_monitoring.map((user) => (
-          <UsageStackCard user={user} />
+          <UsageStackCard key={user.id} user={user} />
         ))}
       </Stack>
 
@@ -32,7 +32,7 @@ export default function SystemUsageTable({ users }: { users: AssignedUser[] }) {
           Follow Up
         </Title>
         {follow_up.map((user) => (
-          <UsageStackCard user={user} />
+          <UsageStackCard key={user.id} user={user} />
         ))}
       </Stack>
     </SimpleGrid>
