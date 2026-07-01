@@ -5,7 +5,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   loading: boolean;
   signedInUser: SignedInUser | null;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -35,12 +35,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       });
 
-      setIsAuthenticated(response.ok);
-    } catch {
-      setIsAuthenticated(false);
-    }
+      if (!response.ok) {
+        throw new Error(`Error - ${response.status}. ${response.statusText}`);
+      }
 
-    setLoading(false);
+      const user = (await response.json()) as SignedInUser;
+      saveAuthenthicationDetails(auth, user);
+    } catch (error) {
+      setIsAuthenticated(false);
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function login(username: string, password: string) {
@@ -54,21 +62,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!response.ok) {
-        return false;
+        throw new Error(`Error - ${response.status}. ${response.statusText}`);
       }
 
-      const user = await response.json();
-      sessionStorage.setItem('auth', auth);
-      sessionStorage.setItem('user', JSON.stringify(user));
-
-      setIsAuthenticated(response.ok);
-      setSignedInUser(user as SignedInUser);
-
-      return true;
-    } catch {
-      return false;
+      const user = (await response.json()) as SignedInUser;
+      saveAuthenthicationDetails(auth, user);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
     }
   }
+
+  const saveAuthenthicationDetails = (auth: string, user: SignedInUser) => {
+    sessionStorage.setItem('auth', auth);
+    sessionStorage.setItem('user', JSON.stringify(user));
+
+    setIsAuthenticated(true);
+    setSignedInUser(user);
+  };
 
   function logout() {
     sessionStorage.removeItem('auth');
