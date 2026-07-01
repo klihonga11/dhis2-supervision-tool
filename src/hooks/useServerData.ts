@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type {
   AssignedUser,
   EventResponse,
@@ -13,6 +13,11 @@ export default function useServerData() {
   const [assignedUsers, setAssignedUsers] = useState<AssignedUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastRefreshTime, setLastRefreshTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchSystemUsageData();
+  }, []);
 
   // gets the user details along with their auth token
   const getAuthenticationDetails = () => {
@@ -46,7 +51,12 @@ export default function useServerData() {
       );
     }
 
-    return supervisorGroup;
+    return {
+      ...supervisorGroup,
+      users: supervisorGroup.users.filter(
+        (user) => user.id !== signedInUser.id
+      ),
+    };
   };
 
   const fetchMostRecentEvents = (
@@ -84,7 +94,7 @@ export default function useServerData() {
   const getUsersWithLastSyncDate = (
     supervisorGroup: SupervisorGroup,
     mostRecentEvents: EventResponse[]
-  ) => {
+  ): AssignedUser[] => {
     return supervisorGroup.users.map((user) => {
       const event = mostRecentEvents.find(
         (event) => event.instances[0]?.createdBy.uid === user.id
@@ -112,6 +122,63 @@ export default function useServerData() {
     );
   };
 
+  // sets the date time when the system usage data was last refreshed
+  const updateRefreshTime = () => {
+    const now = new Date();
+
+    const formatted = new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(now);
+
+    setLastRefreshTime(formatted);
+  };
+
+  // assign a status to the user - 1 means they're doing well, 2 means they need monitoring and 3 means they need follow up
+  const getUsersWithUsageStatus = (users: AssignedUser[]) => {
+    return users.map((user) => {
+      const { lastSyncDate } = user;
+      let status = 1 | 2 | 3;
+
+      if (!lastSyncDate) {
+        status = 3;
+      } else {
+        const diffDays = calculateDiffDays(lastSyncDate);
+
+        if (diffDays <= 3) {
+          status = 1;
+        } else if (diffDays > 3 && diffDays <= 7) {
+          status = 2;
+        } else {
+          status = 3;
+        }
+      }
+
+      return { ...user, status };
+    });
+  };
+
+  // calculates the numbers of days between today and the date the user last synced
+  const calculateDiffDays = (lastSyncDate: string) => {
+    const date = new Date(lastSyncDate);
+    const today = new Date();
+
+    // Set both to midnight
+    date.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const diffMs = today.getTime() - date.getTime();
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+    return diffDays;
+  };
+
+  const clearError = () => setError(null);
+
   const fetchSystemUsageData = async () => {
     setError(null);
     setLoading(true);
@@ -129,8 +196,12 @@ export default function useServerData() {
         supervisorGroup,
         mostRecentEvents
       );
+      const usersWithUsageStatus = getUsersWithUsageStatus(
+        usersWithLastSyncDate
+      );
 
-      setAssignedUsers(usersWithLastSyncDate);
+      updateRefreshTime();
+      setAssignedUsers(usersWithUsageStatus);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -145,5 +216,7 @@ export default function useServerData() {
     assignedUsers,
     loading,
     error,
+    clearError,
+    lastRefreshTime,
   };
 }

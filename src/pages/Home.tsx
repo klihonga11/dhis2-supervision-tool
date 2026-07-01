@@ -1,62 +1,70 @@
 import {
+  Box,
   Button,
-  Container,
+  Center,
   Group,
-  Modal,
+  Loader,
   Space,
+  Stack,
   Text,
   Title,
 } from '@mantine/core';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import classes from '../css/HeaderSimple.module.css';
-import { useDisclosure } from '@mantine/hooks';
 import useServerData from '../hooks/useServerData';
+import SystemUsageTable from '../components/SystemUsageGrid';
+import AppHeader from '../components/AppHeader';
+import ErrorModal from '../components/ErrorModal';
 
 export default function Home() {
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-  const [opened, { open, close }] = useDisclosure(false);
+  const { signedInUser } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  const { assignedUsers, fetchSystemUsageData } = useServerData();
+  const {
+    assignedUsers,
+    fetchSystemUsageData,
+    loading,
+    error,
+    clearError,
+    lastRefreshTime,
+  } = useServerData();
 
   return (
     <>
-      <header className={classes.header}>
-        <Container size="md" className={classes.inner}>
-          <Text style={{ color: 'white' }}>Home page</Text>
-          <Button variant="light" onClick={open}>
-            Log out
-          </Button>
-        </Container>
-      </header>
+      <Stack h="100vh">
+        <AppHeader />
 
-      <Button onClick={fetchSystemUsageData}>Click Me!</Button>
+        <Box px={24}>
+          <Group justify="space-between">
+            <Title order={3}>
+              Welcome, {signedInUser?.firstName} {signedInUser?.surname}
+            </Title>
+            <div>
+              <Button disabled={loading} onClick={fetchSystemUsageData}>
+                Refresh
+              </Button>
+              <Text>Last refreshed: {lastRefreshTime ?? 'N/A'}</Text>
+            </div>
+          </Group>
 
-      <div>
-        <ul>
-          {assignedUsers.map((user) => (
-            <li key={user.id}>{user.name}</li>
-          ))}
-        </ul>
-      </div>
+          <Space h="lg" />
 
-      <Modal opened={opened} onClose={close} withCloseButton={false}>
-        <Title order={3}>Log out</Title>
-        <div>Are you sure you want to log out?</div>
-        <Space h="lg" />
-        <Group>
-          <Button variant="outline" onClick={close}>
-            No
-          </Button>
-          <Button onClick={handleLogout}>Yes</Button>
-        </Group>
-      </Modal>
+          {loading ? (
+            <Center>
+              <div>
+                <Loader />
+                <Text>Loading system usage data. Please wait...</Text>
+              </div>
+            </Center>
+          ) : (
+            <SystemUsageTable users={assignedUsers}></SystemUsageTable>
+          )}
+        </Box>
+      </Stack>
+
+      <ErrorModal
+        opened={error !== null}
+        onClose={clearError}
+        message={error}
+      />
     </>
   );
 }

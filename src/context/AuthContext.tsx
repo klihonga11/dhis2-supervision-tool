@@ -1,9 +1,11 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import type { SignedInUser } from '../utils/types';
 
 type AuthContextType = {
   isAuthenticated: boolean;
   loading: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
+  signedInUser: SignedInUser | null;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -12,37 +14,42 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [signedInUser, setSignedInUser] = useState<SignedInUser | null>(null);
 
   useEffect(() => {
     checkExistingSession();
   }, []);
 
   async function checkExistingSession() {
-    const auth = sessionStorage.getItem('auth');
-
-    if (!auth) {
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await fetch('/api/me', {
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
-      });
+      const auth = sessionStorage.getItem('auth');
 
-      setIsAuthenticated(response.ok);
-    } catch {
-      setIsAuthenticated(false);
+      if (!auth) {
+        setLoading(false);
+        return;
+      }
+
+      await fetchAuthenticationDetails(auth);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
     }
-
-    setLoading(false);
   }
 
   async function login(username: string, password: string) {
-    const auth = btoa(`${username}:${password}`);
+    try {
+      const auth = btoa(`${username}:${password}`);
 
+      await fetchAuthenticationDetails(auth);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+    }
+  }
+
+  const fetchAuthenticationDetails = async (auth: string) => {
     try {
       const response = await fetch('/api/me', {
         headers: {
@@ -51,20 +58,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!response.ok) {
-        return false;
+        throw new Error(`Error - ${response.status}. ${response.statusText}`);
       }
 
-      const user = await response.json();
-      sessionStorage.setItem('auth', auth);
-      sessionStorage.setItem('user', JSON.stringify(user));
-
-      setIsAuthenticated(true);
-
-      return true;
-    } catch {
-      return false;
+      const user = (await response.json()) as SignedInUser;
+      saveAuthenthicationDetails(auth, user);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  const saveAuthenthicationDetails = (auth: string, user: SignedInUser) => {
+    sessionStorage.setItem('auth', auth);
+    sessionStorage.setItem('user', JSON.stringify(user));
+
+    setIsAuthenticated(true);
+    setSignedInUser(user);
+  };
 
   function logout() {
     sessionStorage.removeItem('auth');
@@ -79,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         login,
         logout,
+        signedInUser,
       }}
     >
       {children}

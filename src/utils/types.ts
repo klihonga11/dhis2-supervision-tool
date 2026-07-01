@@ -33,19 +33,19 @@ export type SignedInUser = {
   surname: string;
 };
 
+// status 1 - doing well, 2 - needs monitoring, 3 - follow up
 export type AssignedUser = {
   id: string;
   name: string;
   lastSyncDate?: string;
+  status?: number;
 };
 
 export type SupervisorGroup = {
   displayName: string;
   id: string;
-  users: [
-    {
-      id: string;
-      name: string;
-    },
-  ];
+  users: {
+    id: string;
+    name: string;
+  }[];
 };
