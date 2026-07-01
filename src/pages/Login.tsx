@@ -30,13 +30,9 @@ export default function Login() {
     try {
       const { username, password } = values;
 
-      const success = await login(username, password);
+      await login(username, password);
 
-      if (success) {
-        navigate('/');
-      } else {
-        throw new Error('Invalid username or password');
-      }
+      navigate('/');
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message);
