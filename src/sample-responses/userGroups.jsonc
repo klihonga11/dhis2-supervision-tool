@@ -1,0 +1,46 @@
+// /api/userGroups?filter=users.id:eq:KrAiVtDaJew&fields=id,displayName,users
+
+{
+  "pager": {
+    "page": 1,
+    "total": 1,
+    "pageSize": 50,
+    "pageCount": 1,
+  },
+  "userGroups": [
+    {
+      "displayName": "Supervisor group - Khumbo Lihonga (KrAiVtDaJew)",
+      "id": "VLorgqLF1fN",
+      "users": [
+        {
+          "id": "rPrXqg7gsNq",
+          "code": null,
+          "name": " Marije Geldof",
+          "displayName": " Marije Geldof",
+          "username": "mgeldof",
+        },
+        {
+          "id": "XLYm3R15cR1",
+          "code": null,
+          "name": "Chimango Munthali",
+          "displayName": "Chimango Munthali",
+          "username": "chmunthali",
+        },
+        {
+          "id": "KrAiVtDaJew",
+          "code": null,
+          "name": "Khumbo Lihonga",
+          "displayName": "Khumbo Lihonga",
+          "username": "klihonga",
+        },
+        {
+          "id": "JmnN2v1Udfe",
+          "code": null,
+          "name": "Amanda Nazombe",
+          "displayName": "Amanda Nazombe",
+          "username": "anazombe",
+        },
+      ],
+    },
+  ],
+}
