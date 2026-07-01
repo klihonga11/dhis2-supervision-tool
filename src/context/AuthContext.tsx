@@ -21,13 +21,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function checkExistingSession() {
-    const auth = sessionStorage.getItem('auth');
+    try {
+      const auth = sessionStorage.getItem('auth');
 
-    if (!auth) {
-      setLoading(false);
-      return;
+      if (!auth) {
+        setLoading(false);
+        return;
+      }
+
+      await fetchAuthenticationDetails(auth);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
     }
+  }
 
+  async function login(username: string, password: string) {
+    try {
+      const auth = btoa(`${username}:${password}`);
+
+      await fetchAuthenticationDetails(auth);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+    }
+  }
+
+  const fetchAuthenticationDetails = async (auth: string) => {
     try {
       const response = await fetch('/api/me', {
         headers: {
@@ -42,37 +64,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const user = (await response.json()) as SignedInUser;
       saveAuthenthicationDetails(auth, user);
     } catch (error) {
-      setIsAuthenticated(false);
       if (error instanceof Error) {
         throw new Error(error.message);
       }
     } finally {
       setLoading(false);
     }
-  }
-
-  async function login(username: string, password: string) {
-    const auth = btoa(`${username}:${password}`);
-
-    try {
-      const response = await fetch('/api/me', {
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error - ${response.status}. ${response.statusText}`);
-      }
-
-      const user = (await response.json()) as SignedInUser;
-      saveAuthenthicationDetails(auth, user);
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(error.message);
-      }
-    }
-  }
+  };
 
   const saveAuthenthicationDetails = (auth: string, user: SignedInUser) => {
     sessionStorage.setItem('auth', auth);
